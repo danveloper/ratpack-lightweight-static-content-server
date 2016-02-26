@@ -1,0 +1,79 @@
+= Ratpack as a Lightweight Static Content Server
+Dan Woods <danielpwoods@gmail.com>
+2016-02-26
+
+Ratpack is well known for its ease of use and features that make it an unparalleled choice for building high performance, reactive web applications on the JVM. I've http://shop.oreilly.com/product/0636920037545.do[written extensively about how to leverage its feature set when building robust applications], including everything from data driven web applications to lightweight microservices. But something that is often overshadowed in conversations about how Ratpack can solve complex problems is how Ratpack can be leveraged for solving even simple tasks.
+
+In this post, I want to demonstrate Ratpack's capability to act as a lightweight static content server, with litte more than a few lines of code. This can be beneficial if you are looking to quickly prototype a UI, or you want a temporary playground to prove out an interactive user experience, or even if you want to use it as a long running process on a server to simply serve up some files. Whatever your use case, you will undoubtedly find the power of Ratpack and Groovy to be a beneficial choice for your needs.
+
+To start, let's create a simple directory structure from which our application will start and serve its content. The tree shown in <<dir_struct>> shows our `app.groovy` file, which will be our Ratpack application, and the `public` directory, which will be where the static content lives. Within the `public` directory, we have the `index.html`, which is what will be served up when the browser hits our application. 
+
+[[dir_struct]]
+.Project Directory Structure
+====
+[source,text]
+----
+.
+├── app.groovy
+└── public
+    ├── index.html
+    └── ratpack.png
+
+1 directory, 3 files
+----
+====
+
+The `app.groovy` file builds the HTTP server that will serve our static content. Ratpack's integration with Groovy and its concise API make it an ideal choice for setting up this kind of lightweight server. The code shown in <<app_groovy>> demonstrates all that is needed to get this project up and running.
+
+[[app_groovy]]
+.app.groovy
+====
+[source,groovy]
+----
+@Grab('io.ratpack:ratpack-groovy:1.2.0') // <1>
+
+import static ratpack.groovy.Groovy.ratpack
+
+ratpack {
+  handlers {
+    files { // <2>
+      dir "public" indexFiles "index.html" // <3>
+    }
+  }
+}
+----
+====
+
+<1> We use Groovy's dependency management system to `@Grab` the `ratpack-groovy` project;
+<2> in the handler chain, we use the `files` handler to discover and serve our project's static content. The closure provided to the `files` API allows us to specify the behavior we desire in serving static content;
+<3> within the `files` configuration, we specify that we want to serve content from the `public` directory, and that `index.html` files should be respected as index files.
+
+Specifying index files allows different roots within our `public` directory to serve default content, without the need to explicitly link to `index.html` (as you would expect from any HTTP content server). (We can build a more complex directory structure with nested trees and place `index.html` files within them to serve default data at different levels.)
+
+The only thing needed from here is to fire up the application and see it work. For this, we simply use the `groovy` command line utility, and in doing so, you will get the terminal output like that shown in <<running_the_app>>. Notice how it only takes a few milliseconds for this trivial application to get up and running.
+
+[[running_the_app]]
+.Running the App
+====
+[source,text]
+----
+$ groovy app.groovy
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+WARNING: No slf4j logging binding found for Ratpack, there will be no logging output.
+WARNING: Please add an slf4j binding, such as slf4j-log4j2, to the classpath.
+WARNING: More info may be found here: http://ratpack.io/manual/current/logging.html
+Ratpack started (development) for http://localhost:5050
+----
+====
+
+Most notable to the output is the last line, which indicates to what address our application is bound. Ratpack's default listening port is `5050`, so if you now open a browser and navigate to http://localhost:5050, you will see the contents of your `index.html` prominently displayed. You can make live changes to your static content and have them reflected in real time.
+
+The code for this project is available on my Github at https://github.com/danveloper/ratpack-lightweight-static-content-server.
+
+Ratpack provides a wonderful foundation upon which you can easily build extremely robust applications, but its use case is not limited to the advanced. Indeed, as this post has demonstrated, Ratpack's speed and ease of use make it a valuable asset in projects of any size and scope.
+
+I hope you enjoyed the material here! If you want to dig deeper into Ratpack, you can find plentiful documentation https://ratpack.io[on the project's website], you can http://slack.ratpack.io/[join our community slack], or you can http://shop.oreilly.com/product/0636920037545.do[purchase the early access of _Learning Ratpack_ (O'Reilly)]!
+
+Continue the conversation on twitter by following the https://twitter.com/ratpackweb[@ratpackweb] using the https://twitter.com/search?q=%23ratpackweb[#ratpackweb] hashtag!
